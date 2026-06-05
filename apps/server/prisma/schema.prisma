@@ -1,0 +1,583 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            BigInt    @id @default(autoincrement())
+  phone         String?   @unique @db.VarChar(32)
+  email         String?   @unique @db.VarChar(128)
+  nickname      String    @db.VarChar(64)
+  avatarUrl     String?   @map("avatar_url") @db.VarChar(512)
+  gender        String?   @db.VarChar(16)
+  preferredRole String?   @map("preferred_role") @db.VarChar(16)
+  birthday      DateTime? @db.Date
+  status        String    @default("active") @db.VarChar(16)
+  lastLoginAt   DateTime? @map("last_login_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model UserPushToken {
+  id         BigInt   @id @default(autoincrement())
+  userId     BigInt   @map("user_id")
+  token      String   @unique @db.VarChar(256)
+  platform   String?  @db.VarChar(16)
+  deviceId   String?  @map("device_id") @db.VarChar(128)
+  status     String   @default("active") @db.VarChar(16)
+  lastSeenAt DateTime @default(now()) @map("last_seen_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([status])
+  @@map("user_push_tokens")
+}
+
+model UserNotificationSetting {
+  id                   BigInt   @id @default(autoincrement())
+  userId               BigInt   @unique @map("user_id")
+  chatMessages         Boolean  @default(true) @map("chat_messages")
+  menuApplications     Boolean  @default(true) @map("menu_applications")
+  anniversaryReminders Boolean  @default(true) @map("anniversary_reminders")
+  periodReminders      Boolean  @default(true) @map("period_reminders")
+  quietHours           Boolean  @default(false) @map("quiet_hours")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@map("user_notification_settings")
+}
+
+model CoupleRelationship {
+  id                      BigInt    @id @default(autoincrement())
+  userAId                 BigInt    @map("user_a_id")
+  userBId                 BigInt    @map("user_b_id")
+  publisherUserId         BigInt    @map("publisher_user_id")
+  consumerUserId          BigInt    @map("consumer_user_id")
+  roleConfirmationStatus  String    @default("pending") @map("role_confirmation_status") @db.VarChar(16)
+  roleProposerUserId      BigInt?   @map("role_proposer_user_id")
+  proposedPublisherUserId BigInt?   @map("proposed_publisher_user_id")
+  proposedConsumerUserId  BigInt?   @map("proposed_consumer_user_id")
+  status                  String    @default("active") @db.VarChar(16)
+  togetherSince           DateTime? @map("together_since") @db.Date
+  boundAt                 DateTime  @map("bound_at")
+  unboundAt               DateTime? @map("unbound_at")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+
+  @@index([userAId])
+  @@index([userBId])
+  @@index([publisherUserId])
+  @@index([consumerUserId])
+  @@index([roleConfirmationStatus])
+  @@index([status])
+  @@map("couple_relationships")
+}
+
+model CoupleInvite {
+  id            BigInt    @id @default(autoincrement())
+  inviterUserId BigInt    @map("inviter_user_id")
+  inviteCode    String    @unique @map("invite_code") @db.VarChar(64)
+  status        String    @default("pending") @db.VarChar(16)
+  expiredAt     DateTime? @map("expired_at")
+  usedByUserId  BigInt?   @map("used_by_user_id")
+  usedAt        DateTime? @map("used_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("couple_invites")
+}
+
+model MenuCategory {
+  id              BigInt   @id @default(autoincrement())
+  relationshipId  BigInt   @map("relationship_id")
+  publisherUserId BigInt   @map("publisher_user_id")
+  name            String   @db.VarChar(64)
+  sortOrder       Int      @default(0) @map("sort_order")
+  status          String   @default("active") @db.VarChar(16)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@unique([relationshipId, publisherUserId, name])
+  @@index([relationshipId])
+  @@index([publisherUserId])
+  @@map("menu_categories")
+}
+
+model Menu {
+  id                  BigInt   @id @default(autoincrement())
+  relationshipId      BigInt   @map("relationship_id")
+  publisherUserId     BigInt   @map("publisher_user_id")
+  categoryId          BigInt?  @map("category_id")
+  title               String   @db.VarChar(128)
+  description         String?
+  coverImageUrl       String?  @map("cover_image_url") @db.VarChar(512)
+  isPublished         Boolean  @default(false) @map("is_published")
+  isLimited           Boolean  @default(false) @map("is_limited")
+  availableCount      Int      @default(0) @map("available_count")
+  heatScore           Int      @default(0) @map("heat_score")
+  completedOrderCount Int      @default(0) @map("completed_order_count")
+  remark              String?
+  status              String   @default("active") @db.VarChar(16)
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@index([relationshipId])
+  @@index([publisherUserId])
+  @@index([categoryId])
+  @@index([isPublished])
+  @@index([heatScore])
+  @@map("menus")
+}
+
+model Order {
+  id                BigInt      @id @default(autoincrement())
+  relationshipId    BigInt      @map("relationship_id")
+  menuId            BigInt      @map("menu_id")
+  publisherUserId   BigInt      @map("publisher_user_id")
+  consumerUserId    BigInt      @map("consumer_user_id")
+  orderNo           String      @unique @map("order_no") @db.VarChar(64)
+  status            String      @db.VarChar(16)
+  userRemark        String?     @map("user_remark")
+  acceptedAt        DateTime?   @map("accepted_at")
+  rejectedAt        DateTime?   @map("rejected_at")
+  completedAt       DateTime?   @map("completed_at")
+  cancelledAt       DateTime?   @map("cancelled_at")
+  completedByUserId BigInt?     @map("completed_by_user_id")
+  deductedCount     Int         @default(1) @map("deducted_count")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  items             OrderItem[]
+
+  @@index([relationshipId])
+  @@index([menuId])
+  @@index([publisherUserId])
+  @@index([consumerUserId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                    BigInt   @id @default(autoincrement())
+  orderId               BigInt   @map("order_id")
+  menuId                BigInt   @map("menu_id")
+  titleSnapshot         String   @map("title_snapshot") @db.VarChar(128)
+  coverImageUrlSnapshot String?  @map("cover_image_url_snapshot") @db.VarChar(512)
+  quantity              Int      @default(1)
+  deductedCount         Int      @default(0) @map("deducted_count")
+  sortOrder             Int      @default(0) @map("sort_order")
+  createdAt             DateTime @default(now()) @map("created_at")
+  order                 Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([menuId])
+  @@map("order_items")
+}
+
+model OrderStatusLog {
+  id             BigInt   @id @default(autoincrement())
+  orderId        BigInt   @map("order_id")
+  fromStatus     String?  @map("from_status") @db.VarChar(16)
+  toStatus       String   @map("to_status") @db.VarChar(16)
+  operatorUserId BigInt   @map("operator_user_id")
+  remark         String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([orderId])
+  @@map("order_status_logs")
+}
+
+model OrderFeedback {
+  id             BigInt   @id @default(autoincrement())
+  orderId        BigInt   @map("order_id")
+  relationshipId BigInt   @map("relationship_id")
+  consumerUserId BigInt   @map("consumer_user_id")
+  contentText    String?  @map("content_text")
+  status         String   @default("active") @db.VarChar(16)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([orderId])
+  @@index([relationshipId])
+  @@map("order_feedbacks")
+}
+
+model OrderFeedbackImage {
+  id         BigInt   @id @default(autoincrement())
+  feedbackId BigInt   @map("feedback_id")
+  imageUrl   String   @map("image_url") @db.VarChar(512)
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([feedbackId])
+  @@map("order_feedback_images")
+}
+
+model MenuRequest {
+  id                    BigInt    @id @default(autoincrement())
+  relationshipId        BigInt    @map("relationship_id")
+  consumerUserId        BigInt    @map("consumer_user_id")
+  publisherUserId       BigInt    @map("publisher_user_id")
+  title                 String    @db.VarChar(128)
+  description           String?
+  suggestedCategoryName String?   @map("suggested_category_name") @db.VarChar(64)
+  remark                String?
+  status                String    @default("pending") @db.VarChar(16)
+  handledByUserId       BigInt?   @map("handled_by_user_id")
+  handledAt             DateTime? @map("handled_at")
+  convertedMenuId       BigInt?   @map("converted_menu_id")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  @@map("menu_requests")
+}
+
+model WheelOption {
+  id             BigInt    @id @default(autoincrement())
+  relationshipId BigInt    @map("relationship_id")
+  creatorUserId  BigInt    @map("creator_user_id")
+  title          String    @db.VarChar(64)
+  sortOrder      Int       @default(0) @map("sort_order")
+  selectedCount  Int       @default(0) @map("selected_count")
+  lastSelectedAt DateTime? @map("last_selected_at")
+  status         String    @default("active") @db.VarChar(16)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([relationshipId])
+  @@index([creatorUserId])
+  @@index([status])
+  @@map("wheel_options")
+}
+
+model ChatConversation {
+  id             BigInt    @id @default(autoincrement())
+  relationshipId BigInt    @unique @map("relationship_id")
+  userAId        BigInt    @map("user_a_id")
+  userBId        BigInt    @map("user_b_id")
+  lastMessageId  BigInt?   @map("last_message_id")
+  lastMessageAt  DateTime? @map("last_message_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@map("chat_conversations")
+}
+
+model ChatMessage {
+  id               BigInt    @id @default(autoincrement())
+  conversationId   BigInt    @map("conversation_id")
+  relationshipId   BigInt    @map("relationship_id")
+  senderUserId     BigInt    @map("sender_user_id")
+  receiverUserId   BigInt    @map("receiver_user_id")
+  messageType      String    @map("message_type") @db.VarChar(16)
+  textContent      String?   @map("text_content")
+  replyToMessageId BigInt?   @map("reply_to_message_id")
+  recalledAt       DateTime? @map("recalled_at")
+  status           String    @default("sent") @db.VarChar(16)
+  sentAt           DateTime  @map("sent_at")
+  deliveredAt      DateTime? @map("delivered_at")
+  readAt           DateTime? @map("read_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([conversationId])
+  @@index([senderUserId])
+  @@index([receiverUserId])
+  @@index([sentAt])
+  @@map("chat_messages")
+}
+
+model ChatMessageAsset {
+  id              BigInt   @id @default(autoincrement())
+  messageId       BigInt   @map("message_id")
+  assetType       String   @map("asset_type") @db.VarChar(16)
+  assetUrl        String   @map("asset_url") @db.VarChar(512)
+  durationSeconds Int?     @map("duration_seconds")
+  fileSize        BigInt?  @map("file_size")
+  width           Int?
+  height          Int?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([messageId])
+  @@map("chat_message_assets")
+}
+
+model ChatMessageMention {
+  id        BigInt   @id @default(autoincrement())
+  messageId BigInt   @map("message_id")
+  refType   String   @map("ref_type") @db.VarChar(16)
+  refId     BigInt   @map("ref_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([messageId])
+  @@map("chat_message_mentions")
+}
+
+model ChatNotificationReceipt {
+  id             BigInt    @id @default(autoincrement())
+  messageId      BigInt    @map("message_id")
+  receiverUserId BigInt    @map("receiver_user_id")
+  notifyStatus   String    @map("notify_status") @db.VarChar(16)
+  notifiedAt     DateTime? @map("notified_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([messageId])
+  @@map("chat_notification_receipts")
+}
+
+model Reminder {
+  id              BigInt    @id @default(autoincrement())
+  relationshipId  BigInt    @map("relationship_id")
+  creatorUserId   BigInt    @map("creator_user_id")
+  title           String    @db.VarChar(128)
+  description     String?
+  targetDate      DateTime  @map("target_date")
+  firstRemindAt   DateTime  @map("first_remind_at")
+  dateRuleType    String?   @map("date_rule_type") @db.VarChar(32)
+  ruleMonth       Int?      @map("rule_month")
+  ruleDay         Int?      @map("rule_day")
+  ruleWeekOfMonth Int?      @map("rule_week_of_month")
+  ruleWeekday     Int?      @map("rule_weekday")
+  remindType      String    @map("remind_type") @db.VarChar(16)
+  periodType      String?   @map("period_type") @db.VarChar(16)
+  customDays      Int?      @map("custom_days")
+  repeatTimes     Int?      @map("repeat_times")
+  completedTimes  Int       @default(0) @map("completed_times")
+  status          String    @default("active") @db.VarChar(16)
+  permissionType  String    @default("partner_visible") @map("permission_type") @db.VarChar(24)
+  nextTriggerAt   DateTime? @map("next_trigger_at")
+  lastTriggerAt   DateTime? @map("last_trigger_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@map("reminders")
+}
+
+model ReminderTriggerLog {
+  id            BigInt   @id @default(autoincrement())
+  reminderId    BigInt   @map("reminder_id")
+  triggeredAt   DateTime @map("triggered_at")
+  triggerStatus String   @map("trigger_status") @db.VarChar(16)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([reminderId])
+  @@map("reminder_trigger_logs")
+}
+
+model SpacePost {
+  id               BigInt   @id @default(autoincrement())
+  relationshipId   BigInt   @map("relationship_id")
+  creatorUserId    BigInt   @map("creator_user_id")
+  postType         String   @map("post_type") @db.VarChar(16)
+  sourceOrderId    BigInt?  @map("source_order_id")
+  sourceFeedbackId BigInt?  @map("source_feedback_id")
+  title            String?  @db.VarChar(128)
+  contentText      String?  @map("content_text")
+  recordDate       DateTime @default(now()) @map("record_date")
+  status           String   @default("active") @db.VarChar(16)
+  postedAt         DateTime @map("posted_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@index([relationshipId])
+  @@index([creatorUserId])
+  @@index([postedAt])
+  @@map("space_posts")
+}
+
+model SpacePostImage {
+  id        BigInt   @id @default(autoincrement())
+  postId    BigInt   @map("post_id")
+  imageUrl  String   @map("image_url") @db.VarChar(512)
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([postId])
+  @@map("space_post_images")
+}
+
+model MenstrualProfile {
+  id                BigInt    @id @default(autoincrement())
+  relationshipId    BigInt    @unique @map("relationship_id")
+  femaleUserId      BigInt    @map("female_user_id")
+  maleUserId        BigInt?   @map("male_user_id")
+  maleAccessGranted Boolean   @default(false) @map("male_access_granted")
+  maleViewEnabled   Boolean   @default(false) @map("male_view_enabled")
+  maleEditEnabled   Boolean   @default(false) @map("male_edit_enabled")
+  grantedAt         DateTime? @map("granted_at")
+  revokedAt         DateTime? @map("revoked_at")
+  referenceOnlyFlag Boolean   @default(false) @map("reference_only_flag")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@map("menstrual_profiles")
+}
+
+model MenstrualCycle {
+  id               BigInt    @id @default(autoincrement())
+  profileId        BigInt    @map("profile_id")
+  relationshipId   BigInt    @map("relationship_id")
+  femaleUserId     BigInt    @map("female_user_id")
+  startedOn        DateTime  @map("started_on") @db.Date
+  endedOn          DateTime? @map("ended_on") @db.Date
+  periodLengthDays Int?      @map("period_length_days")
+  cycleLengthDays  Int?      @map("cycle_length_days")
+  status           String    @default("in_progress") @db.VarChar(16)
+  createdByUserId  BigInt    @map("created_by_user_id")
+  updatedByUserId  BigInt    @map("updated_by_user_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([profileId])
+  @@index([relationshipId])
+  @@index([startedOn])
+  @@map("menstrual_cycles")
+}
+
+model MenstrualDailyLog {
+  id                    BigInt   @id @default(autoincrement())
+  profileId             BigInt   @map("profile_id")
+  cycleId               BigInt?  @map("cycle_id")
+  relationshipId        BigInt   @map("relationship_id")
+  recordDate            DateTime @map("record_date") @db.Date
+  cycleDaySnapshot      Int?     @map("cycle_day_snapshot")
+  cycleDaySource        String?  @map("cycle_day_source") @db.VarChar(32)
+  cycleDayLocked        Boolean  @default(false) @map("cycle_day_locked")
+  moodState             String?  @map("mood_state") @db.VarChar(32)
+  painLevel             Int?     @map("pain_level")
+  flowLevel             String?  @map("flow_level") @db.VarChar(32)
+  bloodColor            String?  @map("blood_color") @db.VarChar(32)
+  bloodClotFlag         Boolean? @map("blood_clot_flag")
+  dischargeType         String?  @map("discharge_type") @db.VarChar(32)
+  abdomenPainArea       String?  @map("abdomen_pain_area") @db.VarChar(64)
+  backPainLevel         Int?     @map("back_pain_level")
+  breastTendernessLevel Int?     @map("breast_tenderness_level")
+  skinStatus            String?  @map("skin_status") @db.VarChar(64)
+  sleepQuality          String?  @map("sleep_quality") @db.VarChar(32)
+  stressLevel           Int?     @map("stress_level")
+  dietStatus            String?  @map("diet_status") @db.VarChar(64)
+  exerciseLevel         String?  @map("exercise_level") @db.VarChar(32)
+  bodyTemperature       Decimal? @map("body_temperature") @db.Decimal(4, 2)
+  weightChangeValue     Decimal? @map("weight_change_value") @db.Decimal(5, 2)
+  abnormalEventText     String?  @map("abnormal_event_text")
+  noteText              String?  @map("note_text")
+  createdByUserId       BigInt   @map("created_by_user_id")
+  updatedByUserId       BigInt   @map("updated_by_user_id")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@unique([profileId, recordDate])
+  @@map("menstrual_daily_logs")
+}
+
+model MenstrualDailyLogImage {
+  id         BigInt   @id @default(autoincrement())
+  dailyLogId BigInt   @map("daily_log_id")
+  imageUrl   String   @map("image_url") @db.VarChar(512)
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([dailyLogId])
+  @@map("menstrual_daily_log_images")
+}
+
+model MenstrualPredictionResult {
+  id                                BigInt    @id @default(autoincrement())
+  profileId                         BigInt    @map("profile_id")
+  relationshipId                    BigInt    @map("relationship_id")
+  baseCycleLengthDays               Int?      @map("base_cycle_length_days")
+  basePeriodLengthDays              Int?      @map("base_period_length_days")
+  basePredictedPeriodStartDate      DateTime? @map("base_predicted_period_start_date") @db.Date
+  basePredictedPeriodEndDate        DateTime? @map("base_predicted_period_end_date") @db.Date
+  basePredictedOvulationDate        DateTime? @map("base_predicted_ovulation_date") @db.Date
+  basePredictedOvulationWindowStart DateTime? @map("base_predicted_ovulation_window_start") @db.Date
+  basePredictedOvulationWindowEnd   DateTime? @map("base_predicted_ovulation_window_end") @db.Date
+  baseCurrentCyclePhase             String?   @map("base_current_cycle_phase") @db.VarChar(16)
+  aiAdjustedPeriodStartDate         DateTime? @map("ai_adjusted_period_start_date") @db.Date
+  aiAdjustedPeriodEndDate           DateTime? @map("ai_adjusted_period_end_date") @db.Date
+  aiAdjustedOvulationDate           DateTime? @map("ai_adjusted_ovulation_date") @db.Date
+  aiAdjustedOvulationWindowStart    DateTime? @map("ai_adjusted_ovulation_window_start") @db.Date
+  aiAdjustedOvulationWindowEnd      DateTime? @map("ai_adjusted_ovulation_window_end") @db.Date
+  aiAdjustedCurrentCyclePhase       String?   @map("ai_adjusted_current_cycle_phase") @db.VarChar(16)
+  adjustmentDaysForPeriodStart      Int?      @map("adjustment_days_for_period_start")
+  adjustmentDaysForPeriodEnd        Int?      @map("adjustment_days_for_period_end")
+  adjustmentDaysForOvulation        Int?      @map("adjustment_days_for_ovulation")
+  confidenceScore                   Decimal?  @map("confidence_score") @db.Decimal(4, 3)
+  confidenceLevel                   String?   @map("confidence_level") @db.VarChar(16)
+  adjustmentReasonSummary           String?   @map("adjustment_reason_summary")
+  referenceOnlyFlag                 Boolean   @default(false) @map("reference_only_flag")
+  aiAvailableFlag                   Boolean   @default(true) @map("ai_available_flag")
+  createdAt                         DateTime  @default(now()) @map("created_at")
+
+  @@map("menstrual_prediction_results")
+}
+
+model MenstrualPermissionLog {
+  id             BigInt   @id @default(autoincrement())
+  profileId      BigInt   @map("profile_id")
+  operatorUserId BigInt   @map("operator_user_id")
+  actionType     String   @map("action_type") @db.VarChar(16)
+  oldViewEnabled Boolean? @map("old_view_enabled")
+  newViewEnabled Boolean? @map("new_view_enabled")
+  oldEditEnabled Boolean? @map("old_edit_enabled")
+  newEditEnabled Boolean? @map("new_edit_enabled")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([profileId])
+  @@map("menstrual_permission_logs")
+}
+
+model MenstrualOperationLog {
+  id             BigInt   @id @default(autoincrement())
+  profileId      BigInt   @map("profile_id")
+  operatorUserId BigInt   @map("operator_user_id")
+  operationType  String   @map("operation_type") @db.VarChar(32)
+  targetType     String   @map("target_type") @db.VarChar(32)
+  targetId       BigInt?  @map("target_id")
+  detailJson     Json?    @map("detail_json")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([profileId])
+  @@map("menstrual_operation_logs")
+}
+
+model MenstrualReminderSetting {
+  id                            BigInt   @id @default(autoincrement())
+  relationshipId                BigInt   @unique @map("relationship_id")
+  periodStartReminderEnabled    Boolean  @default(true) @map("period_start_reminder_enabled")
+  periodStartReminderOffsetDays Int      @default(2) @map("period_start_reminder_offset_days")
+  periodDueReminderEnabled      Boolean  @default(true) @map("period_due_reminder_enabled")
+  periodEndReminderEnabled      Boolean  @default(true) @map("period_end_reminder_enabled")
+  sharedReminderEnabled         Boolean  @default(true) @map("shared_reminder_enabled")
+  reminderHour                  Int      @default(9) @map("reminder_hour")
+  reminderMinute                Int      @default(0) @map("reminder_minute")
+  createdAt                     DateTime @default(now()) @map("created_at")
+  updatedAt                     DateTime @updatedAt @map("updated_at")
+
+  @@map("menstrual_reminder_settings")
+}
+
+model Notification {
+  id               BigInt    @id @default(autoincrement())
+  userId           BigInt    @map("user_id")
+  relationshipId   BigInt?   @map("relationship_id")
+  notificationType String    @map("notification_type") @db.VarChar(32)
+  title            String    @db.VarChar(128)
+  content          String?
+  targetType       String?   @map("target_type") @db.VarChar(32)
+  targetId         BigInt?   @map("target_id")
+  isRead           Boolean   @default(false) @map("is_read")
+  sentAt           DateTime? @map("sent_at")
+  readAt           DateTime? @map("read_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@map("notifications")
+}

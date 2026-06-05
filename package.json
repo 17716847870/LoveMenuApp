@@ -1,0 +1,17 @@
+{
+  "name": "lovemenu",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "mobile": "pnpm --filter lovemenu-mobile start",
+    "android": "pnpm --filter lovemenu-mobile android",
+    "server": "pnpm --filter server start:dev",
+    "dev:android:pair": "node scripts/dev-android-pair.mjs",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.3"
+  }
+}

@@ -1,0 +1,13 @@
+node_modules
+.pnpm-store
+dist
+build
+coverage
+.expo
+apps/mobile/.expo
+apps/mobile/dist
+apps/mobile/stitch
+apps/server/dist
+docs
+pnpm-lock.yaml
+*.zip

@@ -1,0 +1,37 @@
+export type AnniversaryRemindType = 'single' | 'repeat' | 'multiple';
+export type AnniversaryPeriodType = 'yearly' | 'half_year' | 'quarter' | 'monthly' | 'weekly' | 'custom_days';
+export type AnniversaryStatus = 'active' | 'paused' | 'completed';
+export type AnniversaryCalendarType = 'solar' | 'lunar';
+export type AnniversaryPermissionType = 'private' | 'partner_visible' | 'partner_editable';
+export type AnniversaryDateRuleType = 'fixed_solar' | 'fixed_lunar' | 'weekday_of_month';
+
+export type AnniversaryReminder = {
+  id: string;
+  title: string;
+  baseTitle: string;
+  creatorUserId: number;
+  description: string;
+  targetDate: string;
+  firstRemindAt: string;
+  calendarType: AnniversaryCalendarType;
+  originalCalendarYear: number;
+  originalCalendarMonth: number;
+  originalCalendarDay: number;
+  remindOffsetDays: number;
+  dateRuleType: AnniversaryDateRuleType | null;
+  ruleMonth: number | null;
+  ruleDay: number | null;
+  ruleWeekOfMonth: number | null;
+  ruleWeekday: number | null;
+  remindType: AnniversaryRemindType;
+  periodType: AnniversaryPeriodType | null;
+  customDays: number | null;
+  repeatTimes: number | null;
+  completedTimes: number;
+  status: AnniversaryStatus;
+  nextTriggerAt: string | null;
+  lastTriggerAt: string | null;
+  createdBy: string;
+  permissionType: AnniversaryPermissionType;
+  anniversaryYears: number | null;
+};

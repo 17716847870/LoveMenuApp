@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "LoveMenu",
+    "slug": "lovemenu",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "LoveMenu 需要使用麦克风来发送聊天语音消息。"
+      }
+    },
+    "android": {
+      "permissions": ["RECORD_AUDIO", "POST_NOTIFICATIONS"],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": ["expo-notifications"],
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
