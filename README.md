@@ -260,6 +260,8 @@ sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d api.example.com
 ```
 
+For redeployment and server update commands, see [docs/deploy.md](docs/deploy.md).
+
 ## GitHub 发布前建议
 
 - Do not commit `.env` files.
