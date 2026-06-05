@@ -150,7 +150,7 @@ EXPO_PUBLIC_API_BASE_URL=https://api.example.com/api pnpm --filter lovemenu-mobi
 当前线上 API 地址：
 
 ```text
-https://api.lovemenu.xyz/api
+https://api.lovemenu.icu/api
 ```
 
 ## 构建检查
@@ -285,4 +285,3 @@ sudo certbot --nginx -d api.example.com
 - 构建正式 App 前，需要配置 Android `package` 和 iOS `bundleIdentifier`。
 - 真机测试和生产环境建议使用 HTTPS API 地址。
 - 测试上传功能前，需要先配置 OSS 访问凭证。
-

@@ -8,8 +8,8 @@
 - 后端目录：`/var/www/LoveMenuApp`
 - 后端进程：PM2 管理，进程名 `lovemenu-server`
 - 后端端口：`3001`
-- Nginx 域名：`https://api.lovemenu.xyz`
-- API 地址：`https://api.lovemenu.xyz/api`
+- Nginx 域名：`https://api.lovemenu.icu`
+- API 地址：`https://api.lovemenu.icu/api`
 - 数据库：PostgreSQL，和后端部署在同一台服务器
 
 ## 1. 登录服务器
@@ -137,7 +137,7 @@ curl http://127.0.0.1:3001/api/health
 再测试公网 HTTPS 域名：
 
 ```bash
-curl https://api.lovemenu.xyz/api/health
+curl https://api.lovemenu.icu/api/health
 ```
 
 正常返回类似：
@@ -161,7 +161,7 @@ pnpm --filter server build
 pm2 restart lovemenu-server
 pm2 save
 pm2 status
-curl https://api.lovemenu.xyz/api/health
+curl https://api.lovemenu.icu/api/health
 ```
 
 ## 13. 常见问题
@@ -260,18 +260,17 @@ certbot certificates
 移动端正式环境使用：
 
 ```text
-https://api.lovemenu.xyz/api
+https://api.lovemenu.icu/api
 ```
 
 本地启动移动端时可以这样指定：
 
 ```bash
-EXPO_PUBLIC_API_BASE_URL=https://api.lovemenu.xyz/api pnpm --filter lovemenu-mobile start
+EXPO_PUBLIC_API_BASE_URL=https://api.lovemenu.icu/api pnpm --filter lovemenu-mobile start
 ```
 
 如果后续打包 App，也需要确保打包时环境变量是：
 
 ```bash
-EXPO_PUBLIC_API_BASE_URL=https://api.lovemenu.xyz/api
+EXPO_PUBLIC_API_BASE_URL=https://api.lovemenu.icu/api
 ```
-
