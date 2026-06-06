@@ -12,7 +12,6 @@ import { routeForNextStep } from '../../utils/onboarding';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RoleSelect'>;
 type RoleChoice = 'publisher' | 'consumer';
-type GenderChoice = 'male' | 'female';
 
 function withAlpha(hex: string, alpha: number) {
   const normalized = hex.replace('#', '');
@@ -32,17 +31,16 @@ export function RoleSelectScreen({ navigation }: Props) {
   const dialog = useAppDialog();
   const { currentUser, nextStep, updateOnboardingProfile } = useAppStore();
   const [selectedRole, setSelectedRole] = useState<RoleChoice | null>(currentUser?.preferred_role ?? null);
-  const [selectedGender, setSelectedGender] = useState<GenderChoice | null>(currentUser?.gender ?? null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleConfirm = async () => {
-    if (!selectedRole || !selectedGender || isSubmitting) {
+    if (!selectedRole || isSubmitting) {
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await updateOnboardingProfile(selectedRole, selectedGender);
+      await updateOnboardingProfile(selectedRole);
       const latestStep = useAppStore.getState().nextStep ?? nextStep ?? 'bind';
       navigation.replace(routeForNextStep(latestStep));
     } catch {
@@ -70,58 +68,17 @@ export function RoleSelectScreen({ navigation }: Props) {
       accent: theme.colors.secondary,
     },
   ];
-  const genders = [
-    {
-      key: 'male' as const,
-      title: '男生',
-      accent: theme.colors.primary,
-    },
-    {
-      key: 'female' as const,
-      title: '女生',
-      accent: theme.colors.secondary,
-    },
-  ];
 
   return (
     <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.colors.text }]}>选择你的身份</Text>
         <Text style={[styles.subtitle, { color: theme.colors.textMuted }]}>
-          先确认性别和身份，绑定时系统会校验双方必须是一男一女。
+          选择你在 LoveMenu 中的身份，绑定时系统会校验双方必须是一男一女。
         </Text>
       </View>
 
       <View style={styles.stack}>
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>你的性别</Text>
-          <View style={styles.genderRow}>
-            {genders.map((gender) => {
-              const active = selectedGender === gender.key;
-              return (
-                <Pressable
-                  key={gender.key}
-                  disabled={isSubmitting}
-                  style={[
-                    styles.genderCard,
-                    {
-                      backgroundColor: active ? withAlpha(gender.accent, theme.dark ? 0.16 : 0.08) : theme.colors.surface,
-                      borderColor: active ? gender.accent : withAlpha(theme.colors.cardBorder, 0.72),
-                    },
-                    isSubmitting ? styles.roleCardDisabled : null,
-                  ]}
-                  onPress={() => setSelectedGender(gender.key)}
-                >
-                  <Text style={[styles.genderText, { color: active ? gender.accent : theme.colors.text }]}>
-                    {gender.title}
-                  </Text>
-                  {active ? <CheckCircle2 size={18} color={gender.accent} strokeWidth={2.4} /> : null}
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>你的身份</Text>
         {roles.map((role) => {
@@ -160,8 +117,8 @@ export function RoleSelectScreen({ navigation }: Props) {
       </View>
 
       <RomanticGradientButton
-        title={isSubmitting ? '保存中...' : selectedRole && selectedGender ? '确认并继续' : '请选择性别和身份'}
-        disabled={!selectedRole || !selectedGender || isSubmitting}
+        title={isSubmitting ? '保存中...' : selectedRole ? '确认并继续' : '请选择身份'}
+        disabled={!selectedRole || isSubmitting}
         onPress={handleConfirm}
         icon={isSubmitting ? <ActivityIndicator color="#ffffff" size="small" /> : undefined}
       />
@@ -201,26 +158,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     lineHeight: 22,
-    fontWeight: '800',
-  },
-  genderRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  genderCard: {
-    flex: 1,
-    minHeight: 58,
-    borderRadius: 18,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  genderText: {
-    fontSize: 17,
-    lineHeight: 24,
     fontWeight: '800',
   },
   roleCard: {

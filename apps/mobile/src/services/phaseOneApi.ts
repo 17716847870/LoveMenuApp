@@ -1,5 +1,7 @@
 import {
   AuthResponse,
+  AppAboutResponse,
+  AppVersionCheckResponse,
   BootstrapResponse,
   CoupleInviteEntity,
   CoupleRelationshipEntity,
@@ -17,8 +19,31 @@ import {
 import { patch, post, request } from './apiClient';
 
 export const phaseOneApi = {
+  sendSmsCode(payload: {
+    phone: string;
+    scene: 'login' | 'register' | 'change_phone' | 'bind_new_phone' | 'verify_bound_phone' | 'reset_password';
+  }) {
+    return post<{ sent: boolean; expires_in_seconds: number; retry_after_seconds: number }>('/sms/verification-code', payload);
+  },
+
+  getAppAbout() {
+    return request<AppAboutResponse>('/app-info/about');
+  },
+
+  checkAppVersion(payload: { platform: 'ios' | 'android' | 'web'; current_version: string; build_number: string }) {
+    return post<AppVersionCheckResponse>('/app-info/version/check', payload);
+  },
+
   login(phone: string) {
     return post<AuthResponse>('/auth/login', { phone });
+  },
+
+  loginWithCode(phone: string, code: string) {
+    return post<AuthResponse>('/auth/login/code', { phone, code });
+  },
+
+  loginWithPassword(phone: string, password: string) {
+    return post<AuthResponse>('/auth/login/password', { phone, password });
   },
 
   refreshSession() {
@@ -33,6 +58,31 @@ export const phaseOneApi = {
     payload: Partial<Pick<UserEntity, 'nickname' | 'phone' | 'email' | 'avatar_url' | 'gender' | 'preferred_role'>>,
   ) {
     return patch<UserEntity>('/users/me', payload);
+  },
+
+  completeRegistrationProfile(payload: {
+    nickname: string;
+    password?: string;
+    avatar_url?: string | null;
+    gender: NonNullable<UserEntity['gender']>;
+  }) {
+    return patch<UserEntity>('/users/me/registration-profile', payload);
+  },
+
+  checkNicknameAvailability(nickname: string) {
+    return request<{ available: boolean }>(`/users/nickname-availability?nickname=${encodeURIComponent(nickname)}`);
+  },
+
+  changePassword(payload: { sms_code: string; new_password: string }) {
+    return patch<{ updated: boolean }>('/users/me/password', payload);
+  },
+
+  verifyPhoneChangeIdentity(payload: { method: 'sms' | 'password'; sms_code?: string; password?: string }) {
+    return patch<{ identity_token: string; expires_in_seconds: number }>('/users/me/phone/identity', payload);
+  },
+
+  changePhone(payload: { identity_token: string; new_phone: string; new_phone_code: string }) {
+    return patch<UserEntity>('/users/me/phone', payload);
   },
 
   touchPresence() {

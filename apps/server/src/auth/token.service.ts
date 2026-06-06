@@ -38,7 +38,7 @@ export class TokenService {
   verifyUserToken(token: string) {
     const [header, payload, signature] = token.split('.');
     if (!header || !payload || !signature) {
-      throw new UnauthorizedException('invalid token');
+      throw new UnauthorizedException('登录状态无效，请重新登录');
     }
 
     const expectedSignature = this.sign(`${header}.${payload}`);
@@ -48,12 +48,12 @@ export class TokenService {
       signatureBuffer.length !== expectedSignatureBuffer.length ||
       !timingSafeEqual(signatureBuffer, expectedSignatureBuffer)
     ) {
-      throw new UnauthorizedException('invalid token');
+      throw new UnauthorizedException('登录状态无效，请重新登录');
     }
 
     const decodedPayload = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as JwtPayload;
     if (!decodedPayload.sub || !decodedPayload.exp || decodedPayload.exp <= Math.floor(Date.now() / 1000)) {
-      throw new UnauthorizedException('token expired');
+      throw new UnauthorizedException('登录已过期，请重新登录');
     }
 
     return {

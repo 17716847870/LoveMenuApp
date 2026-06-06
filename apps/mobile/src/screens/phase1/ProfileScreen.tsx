@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Heart,
   Image as ImageIcon,
+  Info,
   Palette,
   Settings,
   UserCog,
@@ -103,6 +104,12 @@ export function ProfileScreen({ navigation }: Props) {
       label: '通用设置',
       icon: Settings,
       onPress: () => navigation.navigate('GeneralSettings'),
+    },
+    {
+      key: 'about',
+      label: '关于我们',
+      icon: Info,
+      onPress: () => navigation.navigate('About'),
     },
   ];
 

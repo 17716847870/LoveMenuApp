@@ -3,7 +3,7 @@ import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { dataResponse } from '../common/api-response';
 import { AuthService } from './auth.service';
 import { CurrentUserId } from './current-user.decorator';
-import { LoginDto, RegisterDto } from './dto';
+import { CodeLoginDto, LoginDto, PasswordLoginDto, RegisterDto } from './dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller('auth')
@@ -13,6 +13,16 @@ export class AuthController {
   @Post('login')
   async login(@Body() body: LoginDto) {
     return dataResponse(await this.authService.login(body));
+  }
+
+  @Post('login/code')
+  async loginWithCode(@Body() body: CodeLoginDto) {
+    return dataResponse(await this.authService.loginWithCode(body));
+  }
+
+  @Post('login/password')
+  async loginWithPassword(@Body() body: PasswordLoginDto) {
+    return dataResponse(await this.authService.loginWithPassword(body));
   }
 
   @Post('register')

@@ -95,8 +95,8 @@ export class PhaseOneService {
       }),
     ]);
 
-    let nextStep = 'select_role';
-    if (currentUser.preferredRole && currentUser.gender) {
+    let nextStep = currentUser.profileCompleted ? 'select_role' : 'complete_profile';
+    if (currentUser.profileCompleted && currentUser.preferredRole && currentUser.gender) {
       nextStep = 'bind';
     }
     if (relationship?.roleConfirmationStatus === 'pending') {

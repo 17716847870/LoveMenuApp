@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Query, UseGuards } from '@nestjs/common';
 
 import { CurrentUserId } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -20,6 +20,11 @@ export class UsersController {
     return dataResponse(await this.usersService.getUser(userId));
   }
 
+  @Get('nickname-availability')
+  async checkNickname(@CurrentUserId() userId: bigint, @Query('nickname') nickname = '') {
+    return dataResponse(await this.usersService.checkNicknameAvailability(nickname, userId));
+  }
+
   @Patch('me')
   async updateMe(
     @CurrentUserId() userId: bigint,
@@ -34,6 +39,58 @@ export class UsersController {
     }>,
   ) {
     return dataResponse(await this.usersService.updateUser(userId, body));
+  }
+
+  @Patch('me/registration-profile')
+  async completeRegistrationProfile(
+    @CurrentUserId() userId: bigint,
+    @Body()
+    body: {
+      nickname?: string;
+      password?: string;
+      avatar_url?: string | null;
+      gender?: string | null;
+    },
+  ) {
+    return dataResponse(await this.usersService.completeRegistrationProfile(userId, body));
+  }
+
+  @Patch('me/password')
+  async changePassword(
+    @CurrentUserId() userId: bigint,
+    @Body()
+    body: {
+      sms_code?: string;
+      new_password?: string;
+    },
+  ) {
+    return dataResponse(await this.usersService.changePassword(userId, body));
+  }
+
+  @Patch('me/phone/identity')
+  async verifyPhoneChangeIdentity(
+    @CurrentUserId() userId: bigint,
+    @Body()
+    body: {
+      method?: 'sms' | 'password';
+      sms_code?: string;
+      password?: string;
+    },
+  ) {
+    return dataResponse(await this.usersService.verifyPhoneChangeIdentity(userId, body));
+  }
+
+  @Patch('me/phone')
+  async changePhone(
+    @CurrentUserId() userId: bigint,
+    @Body()
+    body: {
+      identity_token?: string;
+      new_phone?: string;
+      new_phone_code?: string;
+    },
+  ) {
+    return dataResponse(await this.usersService.changePhone(userId, body));
   }
 
   @Patch('presence')

@@ -2,6 +2,8 @@ import { BootstrapResponse } from '../types/phaseOne';
 
 export function routeForNextStep(nextStep: BootstrapResponse['next_step']) {
   switch (nextStep) {
+    case 'complete_profile':
+      return 'CompleteProfile';
     case 'select_role':
       return 'RoleSelect';
     case 'bind':

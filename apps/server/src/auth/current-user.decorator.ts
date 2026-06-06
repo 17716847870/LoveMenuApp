@@ -5,7 +5,7 @@ export const CurrentUserId = createParamDecorator((_data: unknown, context: Exec
   const userId = request.user?.userId as bigint | undefined;
 
   if (!userId) {
-    throw new UnauthorizedException('missing user');
+    throw new UnauthorizedException('请先登录');
   }
 
   return userId;

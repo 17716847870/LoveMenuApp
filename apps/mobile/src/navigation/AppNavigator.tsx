@@ -8,8 +8,10 @@ import { AppTopBar } from '../components/AppTopBar';
 import { BindScreen } from '../screens/phase1/BindScreen';
 import { ChatScreen } from '../screens/phase1/ChatScreen';
 import { CategoryManageScreen } from '../screens/phase1/CategoryManageScreen';
+import { CompleteProfileScreen } from '../screens/phase1/CompleteProfileScreen';
 import { HomeScreen } from '../screens/phase1/HomeScreen';
 import { LoginScreen } from '../screens/phase1/LoginScreen';
+import { AboutScreen } from '../screens/phase1/AboutScreen';
 import { AnniversariesScreen } from '../screens/phase1/AnniversariesScreen';
 import { AnniversaryDetailScreen } from '../screens/phase1/AnniversaryDetailScreen';
 import { AnniversaryEditorScreen } from '../screens/phase1/AnniversaryEditorScreen';
@@ -61,6 +63,7 @@ export type RootTabParamList = {
 export type RootStackParamList = {
   Splash: undefined;
   Login: undefined;
+  CompleteProfile: undefined;
   RoleSelect: undefined;
   Bind: undefined;
   RoleConfirm: undefined;
@@ -103,6 +106,7 @@ export type RootStackParamList = {
   Theme: undefined;
   AccountSettings: undefined;
   GeneralSettings: undefined;
+  About: undefined;
   StitchLab: undefined;
   StitchPreview: { stitchScreenId: string };
 };
@@ -299,6 +303,11 @@ export function AppNavigator() {
         <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false, title: '欢迎' }} />
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false, title: '登录 / 注册' }} />
         <Stack.Screen
+          name="CompleteProfile"
+          component={CompleteProfileScreen}
+          options={{ headerShown: false, title: '完善资料' }}
+        />
+        <Stack.Screen
           name="RoleSelect"
           component={RoleSelectScreen}
           options={{ headerShown: false, title: '选择身份' }}
@@ -440,6 +449,7 @@ export function AppNavigator() {
           component={GeneralSettingsScreen}
           options={{ headerShown: false, title: '通用设置' }}
         />
+        <Stack.Screen name="About" component={AboutScreen} options={{ headerShown: false, title: '关于我们' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

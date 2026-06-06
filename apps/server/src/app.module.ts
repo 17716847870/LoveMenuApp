@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { AppController } from './app.controller';
+import { AppInfoModule } from './app-info/app-info.module';
 import { AppService } from './app.service';
 import { AnniversariesModule } from './anniversaries/anniversaries.module';
 import { AuthModule } from './auth/auth.module';
@@ -16,6 +17,7 @@ import { OrdersModule } from './orders/orders.module';
 import { PeriodModule } from './period/period.module';
 import { PhaseOneModule } from './phase-one/phase-one.module';
 import { SpaceModule } from './space/space.module';
+import { SmsModule } from './sms/sms.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { WheelModule } from './wheel/wheel.module';
 
@@ -24,6 +26,7 @@ import { WheelModule } from './wheel/wheel.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    AppInfoModule,
     PrismaModule,
     AnniversariesModule,
     AuthModule,
@@ -36,6 +39,7 @@ import { WheelModule } from './wheel/wheel.module';
     OrdersModule,
     PeriodModule,
     PhaseOneModule,
+    SmsModule,
     SpaceModule,
     UploadsModule,
     WheelModule,

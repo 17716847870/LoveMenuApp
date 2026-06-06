@@ -46,14 +46,19 @@ type AppState = {
   ) => Promise<void>;
   setPreviewRole: (role: PreviewRole) => void;
   login: (phone: string) => Promise<void>;
+  loginWithCode: (phone: string, code: string) => Promise<void>;
+  loginWithPassword: (phone: string, password: string) => Promise<void>;
   restoreSession: () => Promise<boolean>;
   loadBootstrap: (userId?: number) => Promise<void>;
   loadNotificationSettings: () => Promise<void>;
   updateProfile: (payload: Partial<Pick<UserEntity, 'nickname' | 'phone' | 'email' | 'avatar_url'>>) => Promise<void>;
-  updateOnboardingProfile: (
-    role: NonNullable<UserEntity['preferred_role']>,
-    gender: NonNullable<UserEntity['gender']>,
-  ) => Promise<void>;
+  completeRegistrationProfile: (payload: {
+    nickname: string;
+    password?: string;
+    avatar_url?: string | null;
+    gender: NonNullable<UserEntity['gender']>;
+  }) => Promise<void>;
+  updateOnboardingProfile: (role: NonNullable<UserEntity['preferred_role']>) => Promise<void>;
   resetPreferredRole: () => Promise<void>;
   unbindRelationship: () => Promise<void>;
   logout: () => void;
@@ -72,6 +77,20 @@ function applyBootstrap(set: (partial: Partial<AppState>) => void, bootstrap: Bo
     isAuthenticated: true,
   });
   void registerDevicePushToken();
+}
+
+async function applyAuthenticatedSession(
+  set: (partial: Partial<AppState>) => void,
+  get: () => AppState,
+  token: string,
+) {
+  await setAuthToken(token);
+  const { data: bootstrap } = await phaseOneApi.getBootstrap();
+  applyBootstrap(set, bootstrap);
+  await get().loadNotificationSettings();
+  const role =
+    bootstrap.couple_relationship?.publisher_user_id === bootstrap.current_user.id ? 'publisher' : 'consumer';
+  get().setPreviewRole(role);
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -113,12 +132,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   setPreviewRole: (role) => set({ previewRole: role }),
   login: async (phone) => {
     const { data: auth } = await phaseOneApi.login(phone);
-    await setAuthToken(auth.token);
-    const { data: bootstrap } = await phaseOneApi.getBootstrap();
-    applyBootstrap(set, bootstrap);
-    await get().loadNotificationSettings();
-    const role = bootstrap.couple_relationship?.publisher_user_id === auth.user.id ? 'publisher' : 'consumer';
-    get().setPreviewRole(role);
+    await applyAuthenticatedSession(set, get, auth.token);
+  },
+  loginWithCode: async (phone, code) => {
+    const { data: auth } = await phaseOneApi.loginWithCode(phone, code);
+    await applyAuthenticatedSession(set, get, auth.token);
+  },
+  loginWithPassword: async (phone, password) => {
+    const { data: auth } = await phaseOneApi.loginWithPassword(phone, password);
+    await applyAuthenticatedSession(set, get, auth.token);
   },
   restoreSession: async () => {
     const token = await loadAuthToken();
@@ -168,13 +190,23 @@ export const useAppStore = create<AppState>((set, get) => ({
     const { data: bootstrap } = await phaseOneApi.getBootstrap();
     applyBootstrap(set, bootstrap);
   },
-  updateOnboardingProfile: async (role, gender) => {
+  completeRegistrationProfile: async (payload) => {
     const { currentUser } = get();
     if (!currentUser) {
       return;
     }
 
-    await phaseOneApi.updateUser({ preferred_role: role, gender });
+    await phaseOneApi.completeRegistrationProfile(payload);
+    const { data: bootstrap } = await phaseOneApi.getBootstrap();
+    applyBootstrap(set, bootstrap);
+  },
+  updateOnboardingProfile: async (role) => {
+    const { currentUser } = get();
+    if (!currentUser) {
+      return;
+    }
+
+    await phaseOneApi.updateUser({ preferred_role: role });
     const { data: bootstrap } = await phaseOneApi.getBootstrap();
     applyBootstrap(set, bootstrap);
   },
@@ -184,7 +216,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       return;
     }
 
-    await phaseOneApi.updateUser({ preferred_role: null, gender: null });
+    await phaseOneApi.updateUser({ preferred_role: null });
     const { data: bootstrap } = await phaseOneApi.getBootstrap();
     applyBootstrap(set, bootstrap);
   },

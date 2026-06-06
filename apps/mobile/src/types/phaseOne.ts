@@ -3,6 +3,7 @@ export type UserEntity = {
   phone: string | null;
   email: string | null;
   nickname: string;
+  profile_completed: boolean;
   avatar_url: string | null;
   avatar_object_key: string | null;
   gender: 'male' | 'female' | null;
@@ -167,7 +168,7 @@ export type BootstrapResponse = {
   menus: MenuEntity[];
   orders: OrderEntity[];
   couple_invites: CoupleInviteEntity[];
-  next_step: 'select_role' | 'bind' | 'wait_role_confirm' | 'role_confirm' | 'home';
+  next_step: 'complete_profile' | 'select_role' | 'bind' | 'wait_role_confirm' | 'role_confirm' | 'home';
 };
 
 export type HomeSummaryResponse = {
@@ -223,4 +224,31 @@ export type AuthResponse = {
   user: UserEntity;
   token: string;
   expires_at: string;
+};
+
+export type AppAboutResponse = {
+  app_name: string;
+  slogan: string;
+  description: string;
+  version: string;
+  company_name: string;
+  copyright: string;
+  contact_email: string;
+  privacy_policy_url: string;
+  terms_url: string;
+  icp_record: string;
+  police_record: string;
+  features: string[];
+};
+
+export type AppVersionCheckResponse = {
+  latest_version: string;
+  latest_build_number: string;
+  min_supported_version: string;
+  has_update: boolean;
+  force_update: boolean;
+  title: string;
+  release_notes: string[];
+  download_url: string;
+  store_url: string;
 };

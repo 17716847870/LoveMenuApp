@@ -1,9 +1,22 @@
-import { IsEmail, IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEmail, IsIn, IsOptional, IsString, Length, Matches, MaxLength } from 'class-validator';
 
 export class LoginDto {
   @IsString()
   @MaxLength(32)
   phone!: string;
+}
+
+export class CodeLoginDto extends LoginDto {
+  @IsString()
+  @Length(6, 6)
+  code!: string;
+}
+
+export class PasswordLoginDto extends LoginDto {
+  @IsString()
+  @Length(8, 64)
+  @Matches(/^(?=.*[a-z])(?=.*\d).+$/)
+  password!: string;
 }
 
 export class RegisterDto {

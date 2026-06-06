@@ -12,7 +12,7 @@ export class JwtAuthGuard implements CanActivate {
     const [scheme, token] = authorization?.split(' ') ?? [];
 
     if (scheme !== 'Bearer' || !token) {
-      throw new UnauthorizedException('missing token');
+      throw new UnauthorizedException('请先登录');
     }
 
     request.user = this.tokenService.verifyUserToken(token);
