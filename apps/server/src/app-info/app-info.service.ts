@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { PrismaService } from '../prisma/prisma.service';
+
 type VersionCheckPayload = {
   platform?: 'ios' | 'android' | 'web';
   current_version?: string;
@@ -9,9 +11,62 @@ type VersionCheckPayload = {
 
 @Injectable()
 export class AppInfoService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {}
 
-  getAbout() {
+  async getAbout() {
+    const setting = await this.prisma.systemSetting.findUnique({
+      where: { key: 'app.about' },
+    });
+    const fallback = this.getDefaultAbout();
+
+    if (!setting || !setting.valueJson || typeof setting.valueJson !== 'object' || Array.isArray(setting.valueJson)) {
+      return fallback;
+    }
+
+    return {
+      ...fallback,
+      ...(setting.valueJson as Record<string, unknown>),
+    };
+  }
+
+  async checkVersion(payload: VersionCheckPayload) {
+    const platform = payload.platform ?? 'android';
+    const currentBuildNumber = Number(payload.build_number ?? 0);
+    const activeRelease = await this.prisma.appRelease.findFirst({
+      where: {
+        platform,
+        isActive: true,
+        status: 'published',
+      },
+      orderBy: {
+        buildNumber: 'desc',
+      },
+    });
+
+    if (activeRelease) {
+      const hasUpdate = currentBuildNumber < activeRelease.buildNumber;
+
+      return {
+        hasUpdate,
+        latestVersion: activeRelease.versionName,
+        latestBuildNumber: String(activeRelease.buildNumber),
+        forceUpdate: activeRelease.isForceUpdate,
+        title: hasUpdate ? activeRelease.title : '当前已是最新版本',
+        releaseNotes: Array.isArray(activeRelease.releaseNotes) ? activeRelease.releaseNotes : [],
+        downloadUrl: activeRelease.downloadUrl,
+        storeUrl: '',
+        sha256: activeRelease.sha256 ?? '',
+        fileSize: activeRelease.fileSize ?? null,
+      };
+    }
+
+    return this.checkVersionFromEnv(payload);
+  }
+
+  private getDefaultAbout() {
     return {
       appName: this.configService.get<string>('APP_ABOUT_NAME') ?? 'LoveMenu',
       slogan: this.configService.get<string>('APP_ABOUT_SLOGAN') ?? '给情侣一起点餐、记录和陪伴的小应用',
@@ -33,10 +88,11 @@ export class AppInfoService {
         '甜蜜空间记录',
         '经期与纪念日提醒',
       ]),
+      showUpdateEntry: true,
     };
   }
 
-  checkVersion(payload: VersionCheckPayload) {
+  private checkVersionFromEnv(payload: VersionCheckPayload) {
     const platform = payload.platform ?? 'android';
     const latestVersion = this.getPlatformConfig(platform, 'LATEST_VERSION') ?? '1.0.0';
     const latestBuildNumber = this.getPlatformConfig(platform, 'LATEST_BUILD_NUMBER') ?? '1';

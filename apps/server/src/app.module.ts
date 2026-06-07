@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { AppController } from './app.controller';
+import { AdminModule } from './admin/admin.module';
 import { AppInfoModule } from './app-info/app-info.module';
 import { AppService } from './app.service';
 import { AnniversariesModule } from './anniversaries/anniversaries.module';
@@ -26,6 +27,7 @@ import { WheelModule } from './wheel/wheel.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    AdminModule,
     AppInfoModule,
     PrismaModule,
     AnniversariesModule,

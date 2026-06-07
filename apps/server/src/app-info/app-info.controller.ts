@@ -8,12 +8,12 @@ export class AppInfoController {
   constructor(private readonly appInfoService: AppInfoService) {}
 
   @Get('about')
-  getAbout() {
-    return dataResponse(this.appInfoService.getAbout());
+  async getAbout() {
+    return dataResponse(await this.appInfoService.getAbout());
   }
 
   @Post('version/check')
-  checkVersion(
+  async checkVersion(
     @Body()
     body: {
       platform?: 'ios' | 'android' | 'web';
@@ -21,6 +21,6 @@ export class AppInfoController {
       build_number?: string;
     },
   ) {
-    return dataResponse(this.appInfoService.checkVersion(body));
+    return dataResponse(await this.appInfoService.checkVersion(body));
   }
 }

@@ -259,6 +259,124 @@ model WheelOption {
   @@map("wheel_options")
 }
 
+model AdminUser {
+  id           BigInt    @id @default(autoincrement())
+  username     String    @unique @db.VarChar(64)
+  passwordHash String    @map("password_hash") @db.VarChar(256)
+  displayName  String?   @map("display_name") @db.VarChar(64)
+  status       String    @default("active") @db.VarChar(16)
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@map("admin_users")
+}
+
+model SystemSetting {
+  id          BigInt   @id @default(autoincrement())
+  key         String   @unique @db.VarChar(128)
+  valueJson   Json     @map("value_json")
+  description String?
+  updatedBy   BigInt?  @map("updated_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
+
+model AppRelease {
+  id               BigInt    @id @default(autoincrement())
+  platform         String    @db.VarChar(16)
+  versionName      String    @map("version_name") @db.VarChar(32)
+  buildNumber      Int       @map("build_number")
+  title            String    @db.VarChar(128)
+  releaseNotes     Json      @map("release_notes")
+  downloadUrl      String    @map("download_url") @db.VarChar(512)
+  objectKey        String?   @map("object_key") @db.VarChar(512)
+  fileSize         BigInt?   @map("file_size")
+  sha256           String?   @db.VarChar(128)
+  isForceUpdate    Boolean   @default(false) @map("is_force_update")
+  isActive         Boolean   @default(false) @map("is_active")
+  status           String    @default("draft") @db.VarChar(16)
+  publishedAt      DateTime? @map("published_at")
+  createdByAdminId BigInt?   @map("created_by_admin_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@unique([platform, buildNumber])
+  @@index([platform])
+  @@index([platform, isActive])
+  @@index([status])
+  @@map("app_releases")
+}
+
+model DeployLog {
+  id           BigInt    @id @default(autoincrement())
+  status       String    @default("running") @db.VarChar(16)
+  branch       String?   @db.VarChar(64)
+  beforeCommit String?   @map("before_commit") @db.VarChar(64)
+  targetCommit String?   @map("target_commit") @db.VarChar(64)
+  startedBy    BigInt?   @map("started_by")
+  processId    Int?      @map("process_id")
+  logText      String?   @map("log_text")
+  errorMessage String?   @map("error_message")
+  startedAt    DateTime  @default(now()) @map("started_at")
+  finishedAt   DateTime? @map("finished_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([startedAt])
+  @@map("deploy_logs")
+}
+
+model ApiErrorLog {
+  id           BigInt    @id @default(autoincrement())
+  requestId    String?   @map("request_id") @db.VarChar(64)
+  method       String    @db.VarChar(16)
+  path         String    @db.VarChar(512)
+  queryJson    Json?     @map("query_json")
+  bodyJson     Json?     @map("body_json")
+  userId       BigInt?   @map("user_id")
+  ip           String?   @db.VarChar(64)
+  userAgent    String?   @map("user_agent")
+  statusCode   Int       @map("status_code")
+  errorName    String?   @map("error_name") @db.VarChar(128)
+  errorMessage String?   @map("error_message")
+  errorStack   String?   @map("error_stack")
+  isResolved   Boolean   @default(false) @map("is_resolved")
+  resolvedAt   DateTime? @map("resolved_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@index([path])
+  @@index([statusCode])
+  @@index([createdAt])
+  @@index([isResolved])
+  @@map("api_error_logs")
+}
+
+model AdminAuditLog {
+  id            BigInt   @id @default(autoincrement())
+  adminUserId   BigInt?  @map("admin_user_id")
+  adminUsername String?  @map("admin_username") @db.VarChar(64)
+  action        String   @db.VarChar(64)
+  targetType    String?  @map("target_type") @db.VarChar(64)
+  targetId      String?  @map("target_id") @db.VarChar(64)
+  summary       String?
+  beforeJson    Json?    @map("before_json")
+  afterJson     Json?    @map("after_json")
+  ip            String?  @db.VarChar(64)
+  userAgent     String?  @map("user_agent")
+  requestId     String?  @map("request_id") @db.VarChar(64)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([adminUserId])
+  @@index([action])
+  @@index([targetType])
+  @@index([createdAt])
+  @@map("admin_audit_logs")
+}
+
 model ChatConversation {
   id             BigInt    @id @default(autoincrement())
   relationshipId BigInt    @unique @map("relationship_id")

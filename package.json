@@ -7,6 +7,7 @@
     "mobile": "pnpm --filter lovemenu-mobile start",
     "android": "pnpm --filter lovemenu-mobile android",
     "server": "pnpm --filter server start:dev",
+    "admin": "pnpm --filter admin dev",
     "dev:android:pair": "node scripts/dev-android-pair.mjs",
     "format": "prettier . --write",
     "format:check": "prettier . --check"
